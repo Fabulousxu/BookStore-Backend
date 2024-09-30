@@ -186,7 +186,3 @@ VALUES (1, 1, 1),
        (2, 28, 28),
        (2, 29, 29),
        (2, 30, 30);
-
-#创建测试订单信息
-INSERT INTO `order` (user_id, receiver, address, tel, created_at)
-VALUES ()

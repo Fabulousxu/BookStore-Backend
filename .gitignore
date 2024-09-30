@@ -4,6 +4,8 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+/kafka_2.12-3.8.0/
+
 ### STS ###
 .apt_generated
 .classpath

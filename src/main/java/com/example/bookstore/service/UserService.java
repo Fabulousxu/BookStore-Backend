@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 public interface UserService {
   JSONObject login(String username, String password);
 
+  JSONObject logout(long userId);
+
   JSONObject register(String username, String email, String password);
 
   JSONObject searchUsers(String keyword, int pageIndex, int pageSize);

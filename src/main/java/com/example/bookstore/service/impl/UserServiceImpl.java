@@ -35,6 +35,12 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  public JSONObject logout(long userId) {
+    session.removeAttribute("id");
+    return Util.successResponseJson("登出成功");
+  }
+
+  @Override
   public JSONObject register(String username, String email, String password) {
     if (userRepository.existsByUsername(username)) return Util.errorResponseJson("用户已存在");
     User user = new User(username, email);
