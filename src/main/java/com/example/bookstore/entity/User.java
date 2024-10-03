@@ -24,18 +24,18 @@ public class User {
   private Boolean admin = false;
   private Boolean silence = false;
 
-  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
   @OrderBy("createdAt DESC")
   private List<Order> orders;
 
-  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
   @OrderBy("cartItemId DESC")
   private List<CartItem> cart;
 
-  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
   private List<Comment> comments;
 
-  @ManyToMany(mappedBy = "likeUsers", cascade = CascadeType.ALL)
+  @ManyToMany(mappedBy = "likeUsers", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   private List<Comment> likeComments;
 
   public User(String username, String email) {

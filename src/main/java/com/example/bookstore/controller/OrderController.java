@@ -3,9 +3,9 @@ package com.example.bookstore.controller;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.example.bookstore.service.OrderService;
-import java.util.ArrayList;
-import java.util.List;
+import com.example.bookstore.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin
 public class OrderController {
   @Autowired private OrderService orderService;
+  @Autowired private KafkaTemplate<String, String> kafkaTemplate;
 
   @GetMapping
   public JSONArray getOrderItems(@SessionAttribute("id") long id, String keyword) {
@@ -21,10 +22,8 @@ public class OrderController {
 
   @PostMapping
   public JSONObject placeOrder(@RequestBody JSONObject body, @SessionAttribute("id") long id) {
-    List<Long> items = new ArrayList<>();
-    for (int i = 0; i < body.getJSONArray("itemIds").size(); i++)
-      items.add(body.getJSONArray("itemIds").getLong(i));
-    return orderService.placeOrder(
-        items, id, body.getString("receiver"), body.getString("address"), body.getString("tel"));
+    body.put("userId", id);
+    kafkaTemplate.send("placeOrder", body.toJSONString());
+    return Util.successResponseJson("订单处理中");
   }
 }
