@@ -27,14 +27,24 @@ public class OrderController {
   public JSONObject placeOrder(@RequestBody JSONObject body, @SessionAttribute("id") long id) {
     if (PLACE_ORDER_USE_KAFKA) {
       body.put("userId", id);
+      var res = Util.successResponseJson("订单处理中");
+      res.put("ws", true);
+      res.put("id", id);
       kafkaTemplate.send("placeOrder", body.toJSONString());
-      return Util.successResponseJson("订单处理中");
+      return res;
     } else {
       List<Long> items = new ArrayList<>();
       for (int i = 0; i < body.getJSONArray("itemIds").size(); i++)
         items.add(body.getJSONArray("itemIds").getLong(i));
-      return orderService.placeOrder(
-          items, id, body.getString("receiver"), body.getString("address"), body.getString("tel"));
+      var res =
+          orderService.placeOrder(
+              items,
+              id,
+              body.getString("receiver"),
+              body.getString("address"),
+              body.getString("tel"));
+      res.put("ws", false);
+      return res;
     }
   }
 }

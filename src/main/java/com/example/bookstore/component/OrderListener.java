@@ -14,9 +14,10 @@ import org.springframework.stereotype.Component;
 public class OrderListener {
   @Autowired private OrderService orderService;
   @Autowired private KafkaTemplate<String, String> kafkaTemplate;
+  @Autowired private OrderWebSocket ws;
 
   @KafkaListener(topics = "placeOrder", groupId = "bookstore")
-  public void placeOrderListener(ConsumerRecord<String, String> record) {
+  public void placeOrderListener(ConsumerRecord<String, String> record) throws InterruptedException {
     System.out.println("Place order: " + record.value());
     JSONObject body = JSONObject.parseObject(record.value());
     List<Long> items = new ArrayList<>();
@@ -29,11 +30,15 @@ public class OrderListener {
             body.getString("receiver"),
             body.getString("address"),
             body.getString("tel"));
+    res.put("id", body.getLongValue("userId"));
+    Thread.sleep(5000); // Simulate decay
     kafkaTemplate.send("placeOrderResult", res.toJSONString());
   }
 
   @KafkaListener(topics = "placeOrderResult", groupId = "bookstore")
   public void placeOrderResultListener(ConsumerRecord<String, String> record) {
     System.out.println("Place order result: " + record.value());
+    JSONObject res = JSONObject.parseObject(record.value());
+    ws.sendMessage(res.getLongValue("id"), res.toJSONString());
   }
 }
