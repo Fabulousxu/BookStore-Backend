@@ -2,6 +2,8 @@ package com.example.bookstore.service.impl;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.example.bookstore.dao.OrderDao;
+import com.example.bookstore.dao.OrderItemDao;
 import com.example.bookstore.entity.*;
 import com.example.bookstore.repository.BookRepository;
 import com.example.bookstore.repository.OrderItemRepository;
@@ -14,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -21,6 +24,8 @@ public class OrderServiceImpl implements OrderService {
   @Autowired private UserRepository userRepository;
   @Autowired private BookRepository bookRepository;
   @Autowired private OrderItemRepository orderItemRepository;
+  @Autowired private OrderDao orderDao;
+  @Autowired private OrderItemDao orderItemDao;
 
   @Override
   public JSONArray getOrderItems(long userId, String keyword) {
@@ -57,6 +62,7 @@ public class OrderServiceImpl implements OrderService {
   }
 
   @Override
+  @Transactional
   public JSONObject placeOrder(
       List<Long> cartItemIds, long userId, String receiver, String address, String tel) {
     User user = userRepository.findById(userId).orElse(null);
@@ -65,6 +71,8 @@ public class OrderServiceImpl implements OrderService {
       if (user.getCart().stream().noneMatch(item -> item.getCartItemId() == cartItemId))
         return Util.errorResponseJson("购物车商品错误");
     Order order = new Order(user, receiver, address, tel);
+    orderDao.save(order);
+//    int error = 1 / 0;
     for (long cartItemId : cartItemIds) {
       CartItem cartItem =
           user.getCart().stream()
@@ -74,11 +82,16 @@ public class OrderServiceImpl implements OrderService {
       Book book = cartItem.getBook();
       book.setSales(book.getSales() + cartItem.getNumber());
       book.setRepertory(book.getRepertory() - cartItem.getNumber());
-      order.getItems().add(new OrderItem(order, book, cartItem.getNumber()));
+//      int error = 1 / 0;
+      try {
+        orderItemDao.save(new OrderItem(order, book, cartItem.getNumber()));
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+//      int error = 1 / 0;
       user.getCart().remove(cartItem);
       bookRepository.save(book);
     }
-    user.getOrders().add(order);
     userRepository.save(user);
     return Util.successResponseJson("下单成功!");
   }
