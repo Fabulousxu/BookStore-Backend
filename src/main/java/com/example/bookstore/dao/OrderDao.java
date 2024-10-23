@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface OrderDao {
-  void save(Order order);
+  Order save(Order order);
 }

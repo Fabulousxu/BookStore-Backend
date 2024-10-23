@@ -13,8 +13,9 @@ public class OrderDaoImpl implements OrderDao {
 
   @Override
   @Transactional
-  public void save(Order order) {
-    orderRepository.save(order);
+  public Order save(Order order) {
+    var res = orderRepository.save(order);
 //    int error = 1 / 0;
+    return res;
   }
 }

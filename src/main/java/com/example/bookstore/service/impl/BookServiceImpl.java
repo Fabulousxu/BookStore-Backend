@@ -2,10 +2,10 @@ package com.example.bookstore.service.impl;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.example.bookstore.dao.BookDao;
 import com.example.bookstore.entity.Book;
 import com.example.bookstore.entity.Comment;
 import com.example.bookstore.entity.User;
-import com.example.bookstore.repository.BookRepository;
 import com.example.bookstore.repository.CommentRepository;
 import com.example.bookstore.repository.UserRepository;
 import com.example.bookstore.service.BookService;
@@ -17,16 +17,14 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class BookServiceImpl implements BookService {
-  @Autowired private BookRepository bookRepository;
+  @Autowired private BookDao bookDao;
   @Autowired private CommentRepository commentRepository;
   @Autowired private UserRepository userRepository;
 
   @Override
   public JSONObject searchBooks(String keyword, int pageIndex, int pageSize) {
     JSONObject res = new JSONObject();
-    Page<Book> bookPage =
-        bookRepository.findByTitleContainsOrAuthorContainsOrDescriptionContainsOrIsbnContains(
-            keyword, keyword, keyword, keyword, PageRequest.of(pageIndex, pageSize));
+    Page<Book> bookPage = bookDao.findByKeyword(keyword, PageRequest.of(pageIndex, pageSize));
     res.put("totalNumber", bookPage.getTotalElements());
     res.put("totalPage", bookPage.getTotalPages());
     JSONArray items = new JSONArray();
@@ -37,7 +35,7 @@ public class BookServiceImpl implements BookService {
 
   @Override
   public JSONObject getBookInfo(long bookId) {
-    Book book = bookRepository.findById(bookId).orElse(null);
+    Book book = bookDao.findById(bookId);
     return book == null ? null : book.toJson();
   }
 
@@ -59,12 +57,12 @@ public class BookServiceImpl implements BookService {
 
   @Override
   public JSONObject postComment(long bookId, long userId, String content) {
-    Book book = bookRepository.findById(bookId).orElse(null);
+    Book book = bookDao.findById(bookId);
     User user = userRepository.findById(userId).orElse(null);
     if (book == null) return Util.errorResponseJson("书籍不存在");
     if (user == null) return Util.errorResponseJson("用户不存在");
     book.getComments().add(new Comment(user, book, content));
-    bookRepository.save(book);
+    bookDao.save(book);
     return Util.successResponseJson("评论成功");
   }
 
@@ -79,7 +77,7 @@ public class BookServiceImpl implements BookService {
       int price,
       int sales,
       int repertory) {
-    Book book = bookRepository.findById(bookId).orElse(null);
+    Book book = bookDao.findById(bookId);
     if (book == null) return Util.errorResponseJson("书籍不存在");
     book.setTitle(title);
     book.setAuthor(author);
@@ -89,7 +87,7 @@ public class BookServiceImpl implements BookService {
     book.setPrice(price);
     book.setSales(sales);
     book.setRepertory(repertory);
-    bookRepository.save(book);
+    bookDao.save(book);
     return Util.successResponseJson("修改成功");
   }
 
@@ -103,15 +101,15 @@ public class BookServiceImpl implements BookService {
       int price,
       int sales,
       int repertory) {
-    bookRepository.save(new Book(title, author, isbn, cover, description, price, sales, repertory));
+    bookDao.save(new Book(title, author, isbn, cover, description, price, sales, repertory));
     return Util.successResponseJson("添加成功");
   }
 
   @Override
   public JSONObject deleteBook(long bookId) {
-    Book book = bookRepository.findById(bookId).orElse(null);
+    Book book = bookDao.findById(bookId);
     if (book == null) return Util.errorResponseJson("书籍不存在");
-    bookRepository.delete(book);
+    bookDao.delete(book);
     return Util.successResponseJson("删除成功");
   }
 }

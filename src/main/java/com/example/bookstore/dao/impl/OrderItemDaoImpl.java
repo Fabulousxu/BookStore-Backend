@@ -13,8 +13,9 @@ public class OrderItemDaoImpl implements OrderItemDao {
 
   @Override
   @Transactional
-  public void save(OrderItem orderItem) {
-    orderItemRepository.save(orderItem);
+  public OrderItem save(OrderItem orderItem) {
+    var res = orderItemRepository.save(orderItem);
 //    int error = 1 / 0;
+    return res;
   }
 }
