@@ -2,14 +2,12 @@ package com.example.bookstore.entity;
 
 import com.alibaba.fastjson2.JSONObject;
 import jakarta.persistence.*;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "cart_item")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 public class CartItem {
   @Id

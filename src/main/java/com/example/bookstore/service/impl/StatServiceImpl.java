@@ -2,12 +2,12 @@ package com.example.bookstore.service.impl;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.example.bookstore.dao.OrderItemDao;
+import com.example.bookstore.dao.UserDao;
 import com.example.bookstore.entity.Book;
 import com.example.bookstore.entity.Order;
 import com.example.bookstore.entity.OrderItem;
 import com.example.bookstore.entity.User;
-import com.example.bookstore.repository.OrderItemRepository;
-import com.example.bookstore.repository.UserRepository;
 import com.example.bookstore.service.StatService;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -20,13 +20,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class StatServiceImpl implements StatService {
   private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-  @Autowired private OrderItemRepository orderItemRepository;
-  @Autowired private UserRepository userRepository;
+  @Autowired private OrderItemDao orderItemDao;
+  @Autowired private UserDao userDao;
 
   @Override
   public JSONArray getBookStat(String timeBegin, String timeEnd, int number) {
     List<OrderItem> orderItems =
-        orderItemRepository.findByOrder_CreatedAtBetween(
+        orderItemDao.findByCreatedAtBetween(
             LocalDateTime.parse(timeBegin, formatter), LocalDateTime.parse(timeEnd, formatter));
     Map<Book, Integer> bookSales = new HashMap<>();
     for (OrderItem orderItem : orderItems) {
@@ -50,7 +50,7 @@ public class StatServiceImpl implements StatService {
   @Override
   public JSONArray getUserStat(String timeBegin, String timeEnd, int number) {
     List<OrderItem> orderItems =
-        orderItemRepository.findByOrder_CreatedAtBetween(
+        orderItemDao.findByCreatedAtBetween(
             LocalDateTime.parse(timeBegin, formatter), LocalDateTime.parse(timeEnd, formatter));
     Map<User, Integer> userConsumption = new HashMap<>();
     for (OrderItem orderItem : orderItems) {
@@ -77,7 +77,7 @@ public class StatServiceImpl implements StatService {
   @Override
   public JSONObject getMineStat(String timeBegin, String timeEnd, long userId, int number) {
     JSONObject json = new JSONObject();
-    User user = userRepository.findById(userId).orElse(null);
+    User user = userDao.findById(userId);
     if (user == null) return json;
     Map<Book, Integer> bookSales = new HashMap<>();
     for (Order order : user.getOrders())

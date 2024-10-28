@@ -3,11 +3,11 @@ package com.example.bookstore.service.impl;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.example.bookstore.dao.BookDao;
+import com.example.bookstore.dao.CommentDao;
+import com.example.bookstore.dao.UserDao;
 import com.example.bookstore.entity.Book;
 import com.example.bookstore.entity.Comment;
 import com.example.bookstore.entity.User;
-import com.example.bookstore.repository.CommentRepository;
-import com.example.bookstore.repository.UserRepository;
 import com.example.bookstore.service.BookService;
 import com.example.bookstore.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +18,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class BookServiceImpl implements BookService {
   @Autowired private BookDao bookDao;
-  @Autowired private CommentRepository commentRepository;
-  @Autowired private UserRepository userRepository;
+  @Autowired private UserDao userDao;
+  @Autowired private CommentDao commentDao;
 
   @Override
   public JSONObject searchBooks(String keyword, int pageIndex, int pageSize) {
@@ -44,13 +44,11 @@ public class BookServiceImpl implements BookService {
       long bookId, int pageIndex, int pageSize, String sort, long userId) {
     JSONObject res = new JSONObject();
     Page<Comment> commentPage =
-        commentRepository.findByBook_BookIdOrderByCreatedAtDesc(
-            bookId, PageRequest.of(pageIndex, pageSize));
+        commentDao.findByBookId(bookId, PageRequest.of(pageIndex, pageSize));
     res.put("totalNumber", commentPage.getTotalElements());
     res.put("totalPage", commentPage.getTotalPages());
     JSONArray items = new JSONArray();
-    for (Comment comment : commentPage)
-      items.add(comment.toJson(userRepository.findById(userId).get()));
+    for (Comment comment : commentPage) items.add(comment.toJson(userDao.findById(userId)));
     res.put("items", items);
     return res;
   }
@@ -58,7 +56,7 @@ public class BookServiceImpl implements BookService {
   @Override
   public JSONObject postComment(long bookId, long userId, String content) {
     Book book = bookDao.findById(bookId);
-    User user = userRepository.findById(userId).orElse(null);
+    User user = userDao.findById(userId);
     if (book == null) return Util.errorResponseJson("书籍不存在");
     if (user == null) return Util.errorResponseJson("用户不存在");
     book.getComments().add(new Comment(user, book, content));

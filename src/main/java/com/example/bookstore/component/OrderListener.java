@@ -17,12 +17,14 @@ public class OrderListener {
   @Autowired private OrderWebSocket ws;
 
   @KafkaListener(topics = "placeOrder", groupId = "bookstore")
-  public void placeOrderListener(ConsumerRecord<String, String> record) throws InterruptedException {
+  public void placeOrderListener(ConsumerRecord<String, String> record)
+      throws InterruptedException {
     System.out.println("Place order: " + record.value());
     JSONObject body = JSONObject.parseObject(record.value());
     List<Long> items = new ArrayList<>();
     for (int i = 0; i < body.getJSONArray("itemIds").size(); i++)
       items.add(body.getJSONArray("itemIds").getLong(i));
+    Thread.sleep(5000); // Simulate decay
     JSONObject res =
         orderService.placeOrder(
             items,
@@ -31,7 +33,6 @@ public class OrderListener {
             body.getString("address"),
             body.getString("tel"));
     res.put("id", body.getLongValue("userId"));
-    Thread.sleep(5000); // Simulate decay
     kafkaTemplate.send("placeOrderResult", res.toJSONString());
   }
 

@@ -4,14 +4,12 @@ import com.alibaba.fastjson2.JSONObject;
 import jakarta.persistence.*;
 import java.util.Date;
 import java.util.List;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 public class Comment {
   @Id

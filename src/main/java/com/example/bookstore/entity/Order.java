@@ -6,15 +6,13 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "`order`")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 public class Order {
   @Id

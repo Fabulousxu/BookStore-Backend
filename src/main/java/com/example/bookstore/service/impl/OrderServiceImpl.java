@@ -2,12 +2,11 @@ package com.example.bookstore.service.impl;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.example.bookstore.dao.BookDao;
 import com.example.bookstore.dao.OrderDao;
 import com.example.bookstore.dao.OrderItemDao;
+import com.example.bookstore.dao.UserDao;
 import com.example.bookstore.entity.*;
-import com.example.bookstore.repository.BookRepository;
-import com.example.bookstore.repository.OrderItemRepository;
-import com.example.bookstore.repository.UserRepository;
 import com.example.bookstore.service.OrderService;
 import com.example.bookstore.util.Util;
 import java.time.LocalDateTime;
@@ -21,11 +20,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class OrderServiceImpl implements OrderService {
   private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-  @Autowired private UserRepository userRepository;
-  @Autowired private BookRepository bookRepository;
-  @Autowired private OrderItemRepository orderItemRepository;
+  @Autowired private BookDao bookDao;
   @Autowired private OrderDao orderDao;
   @Autowired private OrderItemDao orderItemDao;
+  @Autowired private UserDao userDao;
 
   @Override
   public JSONArray getOrderItems(long userId, String keyword) {
@@ -40,7 +38,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     JSONArray res = new JSONArray();
-    User user = userRepository.findById(userId).orElse(null);
+    User user = userDao.findById(userId);
     if (user != null) {
       for (Order order : user.getOrders()) {
         if (timeFlag && (order.getCreatedAt().isBefore(begin) || order.getCreatedAt().isAfter(end)))
@@ -65,14 +63,14 @@ public class OrderServiceImpl implements OrderService {
   @Transactional
   public JSONObject placeOrder(
       List<Long> cartItemIds, long userId, String receiver, String address, String tel) {
-    User user = userRepository.findById(userId).orElse(null);
+    User user = userDao.findById(userId);
     if (user == null) return Util.errorResponseJson("用户不存在");
     for (long cartItemId : cartItemIds)
       if (user.getCart().stream().noneMatch(item -> item.getCartItemId() == cartItemId))
         return Util.errorResponseJson("购物车商品错误");
     Order order = new Order(user, receiver, address, tel);
     orderDao.save(order);
-//    int error = 1 / 0;
+    // int error = 1 / 0;
     for (long cartItemId : cartItemIds) {
       CartItem cartItem =
           user.getCart().stream()
@@ -82,17 +80,17 @@ public class OrderServiceImpl implements OrderService {
       Book book = cartItem.getBook();
       book.setSales(book.getSales() + cartItem.getNumber());
       book.setRepertory(book.getRepertory() - cartItem.getNumber());
-//      int error = 1 / 0;
+      // int error = 1 / 0;
       try {
         orderItemDao.save(new OrderItem(order, book, cartItem.getNumber()));
       } catch (Exception e) {
         e.printStackTrace();
       }
-//      int error = 1 / 0;
+      // int error = 1 / 0;
       user.getCart().remove(cartItem);
-      bookRepository.save(book);
+      bookDao.save(book);
     }
-    userRepository.save(user);
+    userDao.save(user);
     return Util.successResponseJson("下单成功!");
   }
 
@@ -109,11 +107,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     JSONObject res = new JSONObject();
-    List<OrderItem> orderItems =
-        orderItemRepository
-            .findAllByOrder_User_UsernameContainsOrOrder_User_NicknameContainsOrOrder_User_EmailContainsOrOrder_ReceiverContainsOrOrder_AddressContainsOrOrder_TelContainsOrBook_TitleContainsOrBook_AuthorContainsOrBook_IsbnContainsOrBook_DescriptionContains(
-                keyword, keyword, keyword, keyword, keyword, keyword, keyword, keyword, keyword,
-                keyword);
+    List<OrderItem> orderItems = orderItemDao.findByKeyword(keyword);
     List<OrderItem> orderItemsByTime = new ArrayList<>();
     for (OrderItem orderItem : orderItems) {
       if (timeFlag) {
