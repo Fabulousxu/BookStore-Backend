@@ -15,7 +15,8 @@ import org.springframework.web.multipart.MultipartFile;
 public class UploadController {
   @PostMapping("/image")
   public JSONObject uploadImage(@RequestParam("file") MultipartFile file) throws IOException {
-    String dirName = new File("src/main/resources/static/images").getCanonicalPath() + "/";
+    String dirName =
+        new File("BookStoreMain/src/main/resources/static/images").getCanonicalPath() + "/";
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     StringBuilder fileName = new StringBuilder(LocalDateTime.now().format(formatter));
     String originalFileName = file.getOriginalFilename();

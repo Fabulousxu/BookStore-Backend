@@ -10,6 +10,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
     registry
         .addResourceHandler("/images/**")
         .addResourceLocations(
-            "file:" + System.getProperty("user.dir") + "\\src\\main\\resources\\static\\images\\");
+            "file:" + System.getProperty("user.dir") + "\\BookStoreMain\\src\\main\\resources\\static\\images\\");
   }
 }

@@ -17,7 +17,7 @@ public class BookController {
   }
 
   @GetMapping("/book/{id}")
-  public JSONObject getBookInfo(@PathVariable long id, @SessionAttribute("id") long userId) {
+  public JSONObject getBookInfo(@PathVariable long id) {
     return bookService.getBookInfo(id);
   }
 
