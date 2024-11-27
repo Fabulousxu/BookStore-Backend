@@ -15,6 +15,8 @@ import org.springframework.web.multipart.MultipartFile;
 public class UploadController {
   @PostMapping("/image")
   public JSONObject uploadImage(@RequestParam("file") MultipartFile file) throws IOException {
+    if (true) return Util.errorResponseJson("该图片上传接口已被弃用！");
+
     String dirName =
         new File("BookStoreMain/src/main/resources/static/images").getCanonicalPath() + "/";
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");

@@ -5,6 +5,7 @@ import com.xpg.bookstore.bookstoremain.dao.BookDao;
 import com.xpg.bookstore.bookstoremain.entity.Book;
 import com.xpg.bookstore.bookstoremain.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -12,9 +13,11 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class BookDaoImpl implements BookDao {
-  private static boolean USE_REDIS = true;
   @Autowired private BookRepository bookRepository;
   @Autowired private RedisTemplate redisTemplate;
+
+  @Value("${use-redis}")
+  private boolean USE_REDIS;
 
   @Override
   public Book save(Book book) {
@@ -22,8 +25,8 @@ public class BookDaoImpl implements BookDao {
     if (USE_REDIS) {
       try {
         redisTemplate
-          .opsForValue()
-          .set("book" + savedBook.getBookId(), JSONObject.toJSONString(savedBook));
+            .opsForValue()
+            .set("book" + savedBook.getBookId(), JSONObject.toJSONString(savedBook));
         System.out.println("[BookDao::save] Book: " + savedBook.getBookId() + " is saved in Redis");
       } catch (Exception e) {
         USE_REDIS = false;
@@ -86,6 +89,6 @@ public class BookDaoImpl implements BookDao {
   @Override
   public Page<Book> findByKeyword(String keyword, Pageable pageable) {
     return bookRepository.findByTitleContainsOrAuthorContainsOrDescriptionContainsOrIsbnContains(
-      keyword, keyword, keyword, keyword, pageable);
+        keyword, keyword, keyword, keyword, pageable);
   }
 }
