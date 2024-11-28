@@ -29,7 +29,6 @@ CREATE TABLE book
     title       TEXT        NOT NULL,              # 书名
     author      TEXT        NOT NULL,              # 作者
     isbn        VARCHAR(17) NOT NULL,              # ISBN
-    cover       TEXT        NOT NULL,              # 封面URL
     description TEXT        NOT NULL,              # 描述
     price       INT         NOT NULL,              # 价格
     sales       INT DEFAULT 0,                     # 销量

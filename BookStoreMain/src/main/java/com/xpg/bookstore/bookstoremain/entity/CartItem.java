@@ -1,6 +1,8 @@
 package com.xpg.bookstore.bookstoremain.entity;
 
-import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson2.annotation.JSONField;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,10 +14,14 @@ import lombok.NoArgsConstructor;
 public class CartItem {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @JsonProperty("id")
+  @JSONField(name = "id")
   private long cartItemId;
 
   @ManyToOne
   @JoinColumn(name = "user_id")
+  @JsonIgnore
+  @JSONField(serialize = false)
   private User user;
 
   @ManyToOne
@@ -23,17 +29,4 @@ public class CartItem {
   private Book book;
 
   private int number = 1;
-
-  public CartItem(User user, Book book) {
-    this.user = user;
-    this.book = book;
-  }
-
-  public JSONObject toJson() {
-    JSONObject json = new JSONObject();
-    json.put("id", cartItemId);
-    json.put("book", book.toJson());
-    json.put("number", number);
-    return json;
-  }
 }

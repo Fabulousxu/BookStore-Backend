@@ -1,10 +1,12 @@
 package com.xpg.bookstore.bookstoremain.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "user_auth")
+@Data
 @NoArgsConstructor
 public class UserAuth {
   @Id private long userId;
@@ -13,9 +15,4 @@ public class UserAuth {
   @OneToOne
   @JoinColumn(name = "user_id")
   private User user;
-
-  public UserAuth(User user, String password) {
-    this.userId = user.getUserId();
-    this.password = password;
-  }
 }

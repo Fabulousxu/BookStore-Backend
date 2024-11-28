@@ -2,6 +2,7 @@ package com.xpg.bookstore.bookstoremain.service.impl;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.xpg.bookstore.bookstoremain.dao.BookDao;
 import com.xpg.bookstore.bookstoremain.dao.OrderItemDao;
 import com.xpg.bookstore.bookstoremain.dao.UserDao;
 import com.xpg.bookstore.bookstoremain.entity.Book;
@@ -22,6 +23,7 @@ public class StatServiceImpl implements StatService {
   private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
   @Autowired private OrderItemDao orderItemDao;
   @Autowired private UserDao userDao;
+  @Autowired private BookDao bookDao;
 
   @Override
   public JSONArray getBookStat(String timeBegin, String timeEnd, int number) {
@@ -40,9 +42,10 @@ public class StatServiceImpl implements StatService {
             .toList();
     JSONArray bookStatArray = new JSONArray();
     for (Map.Entry<Book, Integer> entry : sortedBookSales) {
-      JSONObject bookStat = entry.getKey().toJson();
-      bookStat.put("sales", entry.getValue());
-      bookStatArray.add(bookStat);
+      Book book = entry.getKey();
+      book.setSales(entry.getValue());
+      bookDao.loadCover(book);
+      bookStatArray.add(book);
     }
     return bookStatArray;
   }
@@ -67,7 +70,7 @@ public class StatServiceImpl implements StatService {
             .toList();
     JSONArray userStatArray = new JSONArray();
     for (Map.Entry<User, Integer> entry : sortedUserConsumption) {
-      JSONObject userStat = entry.getKey().toJson();
+      JSONObject userStat = JSONObject.from(entry.getKey());
       userStat.put("consumption", entry.getValue());
       userStatArray.add(userStat);
     }
@@ -94,15 +97,16 @@ public class StatServiceImpl implements StatService {
             .toList();
     JSONArray bookStatArray = new JSONArray();
     for (Map.Entry<Book, Integer> entry : sortedBookSales) {
-      JSONObject bookStat = entry.getKey().toJson();
-      bookStat.put("sales", entry.getValue());
-      bookStatArray.add(bookStat);
+      Book book = entry.getKey();
+      book.setSales(entry.getValue());
+      bookDao.loadCover(book);
+      bookStatArray.add(book);
     }
     json.put("list", bookStatArray);
     long totalSales = 0, totalConsumption = 0;
     for (Map.Entry<Book, Integer> entry : sortedBookSales) {
       totalSales += entry.getValue();
-      totalConsumption += entry.getKey().getPrice() * entry.getValue();
+      totalConsumption += (long) entry.getKey().getPrice() * entry.getValue();
     }
     json.put("totalSales", totalSales);
     json.put("totalConsumption", totalConsumption);

@@ -39,22 +39,26 @@ public class OrderServiceImpl implements OrderService {
 
     JSONArray res = new JSONArray();
     User user = userDao.findById(userId);
-    if (user != null) {
-      for (Order order : user.getOrders()) {
-        if (timeFlag && (order.getCreatedAt().isBefore(begin) || order.getCreatedAt().isAfter(end)))
-          continue;
-        if (order.getReceiver().contains(keyword)
-            || order.getAddress().contains(keyword)
-            || order.getTel().contains(keyword)) {
-          for (OrderItem orderItem : order.getItems()) res.add(orderItem.toJsonWithOrderMessage());
-        } else
-          for (OrderItem orderItem : order.getItems())
-            if (orderItem.getBook().getTitle().contains(keyword)
-                || orderItem.getBook().getAuthor().contains(keyword)
-                || orderItem.getBook().getIsbn().contains(keyword)
-                || orderItem.getBook().getDescription().contains(keyword))
-              res.add(orderItem.toJsonWithOrderMessage());
-      }
+    if (user == null) return res;
+    for (Order order : user.getOrders()) {
+      if (timeFlag && (order.getCreatedAt().isBefore(begin) || order.getCreatedAt().isAfter(end)))
+        continue;
+      if (order.getReceiver().contains(keyword)
+          || order.getAddress().contains(keyword)
+          || order.getTel().contains(keyword))
+        for (OrderItem orderItem : order.getItems()) {
+          bookDao.loadCover(orderItem.getBook());
+          res.add(orderItemDao.loadOrderToJson(orderItem));
+        }
+      else
+        for (OrderItem orderItem : order.getItems())
+          if (orderItem.getBook().getTitle().contains(keyword)
+              || orderItem.getBook().getAuthor().contains(keyword)
+              || orderItem.getBook().getIsbn().contains(keyword)
+              || orderItem.getBook().getDescription().contains(keyword)) {
+            bookDao.loadCover(orderItem.getBook());
+            res.add(orderItemDao.loadOrderToJson(orderItem));
+          }
     }
     return res;
   }
@@ -68,21 +72,28 @@ public class OrderServiceImpl implements OrderService {
     for (long cartItemId : cartItemIds)
       if (user.getCart().stream().noneMatch(item -> item.getCartItemId() == cartItemId))
         return Util.errorResponseJson("购物车商品错误");
-    Order order = new Order(user, receiver, address, tel);
+    Order order = new Order();
+    order.setUser(user);
+    order.setReceiver(receiver);
+    order.setAddress(address);
+    order.setTel(tel);
     orderDao.save(order);
     // int error = 1 / 0;
     for (long cartItemId : cartItemIds) {
+      List<CartItem> cart = user.getCart();
       CartItem cartItem =
-          user.getCart().stream()
-              .filter(item -> item.getCartItemId() == cartItemId)
-              .findFirst()
-              .get();
+          cart.stream().filter(item -> item.getCartItemId() == cartItemId).findFirst().get();
       Book book = cartItem.getBook();
+      bookDao.loadCover(book);
       book.setSales(book.getSales() + cartItem.getNumber());
       book.setRepertory(book.getRepertory() - cartItem.getNumber());
       // int error = 1 / 0;
       try {
-        orderItemDao.save(new OrderItem(order, book, cartItem.getNumber()));
+        OrderItem orderItem = new OrderItem();
+        orderItem.setOrder(order);
+        orderItem.setBook(book);
+        orderItem.setNumber(cartItem.getNumber());
+        orderItemDao.save(orderItem);
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -107,21 +118,22 @@ public class OrderServiceImpl implements OrderService {
     }
 
     JSONObject res = new JSONObject();
-    List<OrderItem> orderItems = orderItemDao.findByKeyword(keyword);
-    List<OrderItem> orderItemsByTime = new ArrayList<>();
-    for (OrderItem orderItem : orderItems) {
-      if (timeFlag) {
+    List<OrderItem> orderItems = timeFlag ? new ArrayList<>() : orderItemDao.findByKeyword(keyword);
+    if (timeFlag)
+      for (OrderItem orderItem : orderItemDao.findByKeyword(keyword))
         if (orderItem.getOrder().getCreatedAt().isAfter(begin)
-            && orderItem.getOrder().getCreatedAt().isBefore(end)) orderItemsByTime.add(orderItem);
-      } else orderItemsByTime.add(orderItem);
-    }
+            && orderItem.getOrder().getCreatedAt().isBefore(end)) orderItems.add(orderItem);
 
-    res.put("totalNumber", orderItemsByTime.size());
-    res.put("totalPage", Math.ceil((double) orderItemsByTime.size() / (double) pageSize));
+    res.put("totalNumber", orderItems.size());
+    res.put("totalPage", Math.ceil((double) orderItems.size() / (double) pageSize));
     JSONArray items = new JSONArray();
     for (int i = pageIndex * pageSize;
-        i < orderItemsByTime.size() && i < (pageIndex + 1) * pageSize;
-        i++) items.add(orderItemsByTime.get(i).toJsonWithOrderMessage());
+        i < orderItems.size() && i < (pageIndex + 1) * pageSize;
+        i++) {
+      OrderItem orderItem = orderItems.get(i);
+      bookDao.loadCover(orderItem.getBook());
+      items.add(orderItemDao.loadOrderToJson(orderItem));
+    }
     res.put("items", items);
     return res;
   }

@@ -41,9 +41,14 @@ public class UserServiceImpl implements UserService {
   @Override
   public JSONObject register(String username, String email, String password) {
     if (userDao.existsByUsername(username)) return Util.errorResponseJson("用户已存在");
-    User user = new User(username, email);
+    User user = new User();
+    user.setUsername(username);
+    user.setEmail(email);
     userDao.save(user);
-    userDao.save(new UserAuth(user, password));
+    UserAuth userAuth = new UserAuth();
+    userAuth.setUserId(user.getUserId());
+    userAuth.setPassword(password);
+    userDao.save(userAuth);
     return Util.successResponseJson("注册成功");
   }
 
@@ -54,7 +59,7 @@ public class UserServiceImpl implements UserService {
     res.put("totalNumber", userPage.getTotalElements());
     res.put("totalPage", userPage.getTotalPages());
     JSONArray items = new JSONArray();
-    for (User user : userPage) items.add(user.toJson());
+    for (User user : userPage) items.add(user);
     res.put("items", items);
     return res;
   }

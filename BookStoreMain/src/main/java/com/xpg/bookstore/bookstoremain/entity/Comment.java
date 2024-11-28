@@ -1,6 +1,9 @@
 package com.xpg.bookstore.bookstoremain.entity;
 
-import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson2.annotation.JSONField;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.util.Date;
 import java.util.List;
@@ -14,14 +17,20 @@ import org.hibernate.annotations.CreationTimestamp;
 public class Comment {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @JsonProperty("id")
+  @JSONField(name = "id")
   private long commentId;
 
   @ManyToOne
   @JoinColumn(name = "user_id")
+  @JsonIgnore
+  @JSONField(serialize = false)
   private User user;
 
   @ManyToOne
   @JoinColumn(name = "book_id")
+  @JsonIgnore
+  @JSONField(serialize = false)
   private Book book;
 
   private String content;
@@ -31,6 +40,8 @@ public class Comment {
 
   @CreationTimestamp
   @Temporal(TemporalType.TIMESTAMP)
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+  @JSONField(format = "yyyy-MM-dd HH:mm:ss")
   private Date createdAt;
 
   @ManyToMany
@@ -38,22 +49,7 @@ public class Comment {
       name = "comment_like",
       joinColumns = @JoinColumn(name = "comment_id"),
       inverseJoinColumns = @JoinColumn(name = "user_id"))
+  @JsonIgnore
+  @JSONField(serialize = false)
   private List<User> likeUsers;
-
-  public Comment(User user, Book book, String content) {
-    this.user = user;
-    this.book = book;
-    this.content = content;
-  }
-
-  public JSONObject toJson(User user) {
-    JSONObject res = new JSONObject();
-    res.put("id", commentId);
-    res.put("username", user.getUsername());
-    res.put("content", content);
-    res.put("createdAt", createdAt);
-    res.put("like", like);
-    res.put("liked", likeUsers.contains(user));
-    return res;
-  }
 }

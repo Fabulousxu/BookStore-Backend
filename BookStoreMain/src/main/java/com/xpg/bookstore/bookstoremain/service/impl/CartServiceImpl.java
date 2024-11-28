@@ -9,6 +9,7 @@ import com.xpg.bookstore.bookstoremain.entity.CartItem;
 import com.xpg.bookstore.bookstoremain.entity.User;
 import com.xpg.bookstore.bookstoremain.service.CartService;
 import com.xpg.bookstore.bookstoremain.util.Util;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +22,11 @@ public class CartServiceImpl implements CartService {
   public JSONArray getCart(long userId) {
     JSONArray res = new JSONArray();
     User user = userDao.findById(userId);
-    if (user != null) for (CartItem item : user.getCart()) res.add(item.toJson());
+    if (user == null) return res;
+    for (CartItem item : user.getCart()) {
+      bookDao.loadCover(item.getBook());
+      res.add(item);
+    }
     return res;
   }
 
@@ -33,7 +38,10 @@ public class CartServiceImpl implements CartService {
     if (user == null) return Util.errorResponseJson("用户不存在");
     if (user.getCart().stream().anyMatch(item -> item.getBook().getBookId() == bookId))
       return Util.errorResponseJson("书籍已在购物车中");
-    user.getCart().add(new CartItem(user, book));
+    CartItem cartItem = new CartItem();
+    cartItem.setUser(user);
+    cartItem.setBook(book);
+    user.getCart().add(cartItem);
     userDao.save(user);
     return Util.successResponseJson("成功加入购物车");
   }
@@ -43,11 +51,9 @@ public class CartServiceImpl implements CartService {
     User user = userDao.findById(userId);
     if (user == null) return Util.errorResponseJson("用户不存在");
     if (number <= 0) return Util.errorResponseJson("数量不合法");
+    List<CartItem> cart = user.getCart();
     CartItem item =
-        user.getCart().stream()
-            .filter(it -> it.getCartItemId() == cartItemId)
-            .findFirst()
-            .orElse(null);
+        cart.stream().filter(it -> it.getCartItemId() == cartItemId).findFirst().orElse(null);
     if (item == null) return Util.errorResponseJson("购物车项不存在");
     item.setNumber(number);
     userDao.save(user);

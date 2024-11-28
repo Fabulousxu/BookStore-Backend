@@ -2,12 +2,12 @@ package com.xpg.bookstore.bookstoremain.service.impl;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import com.xpg.bookstore.bookstoremain.entity.User;
 import com.xpg.bookstore.bookstoremain.dao.BookDao;
 import com.xpg.bookstore.bookstoremain.dao.CommentDao;
 import com.xpg.bookstore.bookstoremain.dao.UserDao;
 import com.xpg.bookstore.bookstoremain.entity.Book;
 import com.xpg.bookstore.bookstoremain.entity.Comment;
+import com.xpg.bookstore.bookstoremain.entity.User;
 import com.xpg.bookstore.bookstoremain.service.BookService;
 import com.xpg.bookstore.bookstoremain.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,12 +23,12 @@ public class BookServiceImpl implements BookService {
 
   @Override
   public JSONObject searchBooks(String keyword, int pageIndex, int pageSize) {
-    JSONObject res = new JSONObject();
     Page<Book> bookPage = bookDao.findByKeyword(keyword, PageRequest.of(pageIndex, pageSize));
+    JSONObject res = new JSONObject();
     res.put("totalNumber", bookPage.getTotalElements());
     res.put("totalPage", bookPage.getTotalPages());
     JSONArray items = new JSONArray();
-    for (Book book : bookPage) items.add(book.toJson());
+    for (Book book : bookPage) items.add(book);
     res.put("items", items);
     return res;
   }
@@ -36,7 +36,7 @@ public class BookServiceImpl implements BookService {
   @Override
   public JSONObject getBookInfo(long bookId) {
     Book book = bookDao.findById(bookId);
-    return book == null ? null : book.toJson();
+    return book == null ? null : JSONObject.from(book);
   }
 
   @Override
@@ -48,7 +48,7 @@ public class BookServiceImpl implements BookService {
     res.put("totalNumber", commentPage.getTotalElements());
     res.put("totalPage", commentPage.getTotalPages());
     JSONArray items = new JSONArray();
-    for (Comment comment : commentPage) items.add(comment.toJson(userDao.findById(userId)));
+    for (Comment comment : commentPage) items.add(commentDao.addMessageToJson(comment, userId));
     res.put("items", items);
     return res;
   }
@@ -59,7 +59,11 @@ public class BookServiceImpl implements BookService {
     User user = userDao.findById(userId);
     if (book == null) return Util.errorResponseJson("书籍不存在");
     if (user == null) return Util.errorResponseJson("用户不存在");
-    book.getComments().add(new Comment(user, book, content));
+    Comment comment = new Comment();
+    comment.setUser(user);
+    comment.setBook(book);
+    comment.setContent(content);
+    book.getComments().add(comment);
     bookDao.save(book);
     return Util.successResponseJson("评论成功");
   }
@@ -99,15 +103,23 @@ public class BookServiceImpl implements BookService {
       int price,
       int sales,
       int repertory) {
-    bookDao.save(new Book(title, author, isbn, cover, description, price, sales, repertory));
+    Book book = new Book();
+    book.setTitle(title);
+    book.setAuthor(author);
+    book.setIsbn(isbn);
+    book.setCover(cover);
+    book.setDescription(description);
+    book.setPrice(price);
+    book.setSales(sales);
+    book.setRepertory(repertory);
+    bookDao.save(book);
     return Util.successResponseJson("添加成功");
   }
 
   @Override
   public JSONObject deleteBook(long bookId) {
-    Book book = bookDao.findById(bookId);
-    if (book == null) return Util.errorResponseJson("书籍不存在");
-    bookDao.delete(book);
+    if (!bookDao.existsById(bookId)) return Util.errorResponseJson("书籍不存在");
+    bookDao.deleteById(bookId);
     return Util.successResponseJson("删除成功");
   }
 }
