@@ -1,7 +1,7 @@
 package com.xpg.bookstore.bookstoremain.dao;
 
-import com.alibaba.fastjson2.JSONObject;
 import com.xpg.bookstore.bookstoremain.entity.Book;
+import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
@@ -17,6 +17,8 @@ public interface BookDao {
   void deleteById(long id);
 
   Page<Book> findByKeyword(String keyword, Pageable pageable);
+
+  Page<Book> findByCategoryCodeContains(Set<String> categoryCodes, Pageable pageable);
 
   void loadCover(Book book);
 }

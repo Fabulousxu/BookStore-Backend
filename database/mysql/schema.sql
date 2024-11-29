@@ -91,3 +91,12 @@ CREATE TABLE comment_like
     FOREIGN KEY (comment_id) REFERENCES comment (comment_id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (user_id) REFERENCES user (user_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+# 书籍分类表
+CREATE TABLE book_category
+(
+    book_id       BIGINT     NOT NULL, # 书籍id
+    category_code VARCHAR(8) NOT NULL, # 分类代码
+    PRIMARY KEY (book_id, category_code),
+    FOREIGN KEY (book_id) REFERENCES book (book_id) ON DELETE CASCADE ON UPDATE CASCADE
+);

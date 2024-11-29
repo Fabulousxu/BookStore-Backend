@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.util.List;
+import java.util.Set;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -27,6 +28,12 @@ public class Book {
   private int sales = 0;
   private int repertory = 0;
   @Transient private String cover = "";
+
+  @ElementCollection
+  @CollectionTable(name = "book_category", joinColumns = @JoinColumn(name = "book_id"))
+  @JsonIgnore
+  @JSONField(serialize = false)
+  private Set<String> categoryCode;
 
   @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
   @OrderBy("createdAt DESC")

@@ -21,6 +21,11 @@ public class BookController {
     return bookService.getBookInfo(id);
   }
 
+  @GetMapping("/books/category")
+  public JSONObject searchBooksByCategory(String category, int pageIndex, int pageSize) {
+    return bookService.searchBooksByCategory(category, pageIndex, pageSize);
+  }
+
   @GetMapping("/book/{id}/comments")
   public JSONObject getComments(
       @PathVariable long id,

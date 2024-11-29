@@ -6,6 +6,8 @@ import com.xpg.bookstore.bookstoremain.entity.Book;
 import com.xpg.bookstore.bookstoremain.entity.BookCover;
 import com.xpg.bookstore.bookstoremain.repository.BookCoverRepository;
 import com.xpg.bookstore.bookstoremain.repository.BookRepository;
+import java.util.List;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -108,6 +110,25 @@ public class BookDaoImpl implements BookDao {
     Page<Book> bookPage =
         bookRepository.findByTitleContainsOrAuthorContainsOrDescriptionContainsOrIsbnContains(
             keyword, keyword, keyword, keyword, pageable);
+    for (Book book : bookPage) loadCover(book);
+    return bookPage;
+  }
+
+  @Override
+  public Page<Book> findByCategoryCodeContains(Set<String> categoryCodes, Pageable pageable) {
+    List<String> categoryCodesList = categoryCodes.stream().toList();
+    Page<Book> bookPage =
+        bookRepository
+            .findByCategoryCodeContainsOrCategoryCodeContainsOrCategoryCodeContainsOrCategoryCodeContainsOrCategoryCodeContainsOrCategoryCodeContainsOrCategoryCodeContainsOrCategoryCodeContains(
+                !categoryCodesList.isEmpty() ? categoryCodesList.get(0) : "",
+                categoryCodesList.size() > 1 ? categoryCodesList.get(1) : "",
+                categoryCodesList.size() > 2 ? categoryCodesList.get(2) : "",
+                categoryCodesList.size() > 3 ? categoryCodesList.get(3) : "",
+                categoryCodesList.size() > 4 ? categoryCodesList.get(4) : "",
+                categoryCodesList.size() > 5 ? categoryCodesList.get(5) : "",
+                categoryCodesList.size() > 6 ? categoryCodesList.get(6) : "",
+                categoryCodesList.size() > 7 ? categoryCodesList.get(7) : "",
+                pageable);
     for (Book book : bookPage) loadCover(book);
     return bookPage;
   }

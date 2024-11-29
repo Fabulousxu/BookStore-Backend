@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 public interface BookService {
   JSONObject searchBooks(String keyword, int pageIndex, int pageSize);
 
+  JSONObject searchBooksByCategory(String category, int pageIndex, int pageSize);
+
   JSONObject getBookInfo(long bookId);
 
   JSONObject getBookComments(long bookId, int pageIndex, int pageSize, String sort, long userId);
