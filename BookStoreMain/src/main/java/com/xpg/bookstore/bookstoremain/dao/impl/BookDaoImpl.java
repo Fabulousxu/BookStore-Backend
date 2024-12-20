@@ -134,6 +134,13 @@ public class BookDaoImpl implements BookDao {
   }
 
   @Override
+  public Page<Book> findByTitleContains(String title, Pageable pageable) {
+    Page<Book> bookPage = bookRepository.findByTitleContains(title, pageable);
+    for (Book book : bookPage) loadCover(book);
+    return bookPage;
+  }
+
+  @Override
   public void loadCover(Book book) {
     bookCoverRepository
         .findById(String.valueOf(book.getBookId()))

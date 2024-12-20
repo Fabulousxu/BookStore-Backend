@@ -1,0 +1,21 @@
+type Query {
+    searchBooksByTitle(title: String!, pageIndex: Int!, pageSize: Int!): SearchBooksResponse!
+}
+
+type Book {
+    id: ID!
+    title: String!
+    author: String!
+    isbn: String!
+    description: String!
+    price: Int!
+    sales: Int!
+    repertory: Int!
+    cover: String!
+}
+
+type SearchBooksResponse {
+    totalNumber: Int!
+    totalPage: Int!
+    items: [Book!]!
+}

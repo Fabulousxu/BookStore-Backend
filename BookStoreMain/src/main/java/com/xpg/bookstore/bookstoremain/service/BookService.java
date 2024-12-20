@@ -9,6 +9,8 @@ public interface BookService {
 
   JSONObject searchBooksByCategory(String category, int pageIndex, int pageSize);
 
+  JSONObject searchBooksByTitle(String title, int pageIndex, int pageSize);
+
   JSONObject getBookInfo(long bookId);
 
   JSONObject getBookComments(long bookId, int pageIndex, int pageSize, String sort, long userId);

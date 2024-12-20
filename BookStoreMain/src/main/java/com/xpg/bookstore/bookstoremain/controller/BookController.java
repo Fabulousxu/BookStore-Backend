@@ -3,6 +3,8 @@ package com.xpg.bookstore.bookstoremain.controller;
 import com.alibaba.fastjson2.JSONObject;
 import com.xpg.bookstore.bookstoremain.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,6 +26,12 @@ public class BookController {
   @GetMapping("/books/category")
   public JSONObject searchBooksByCategory(String category, int pageIndex, int pageSize) {
     return bookService.searchBooksByCategory(category, pageIndex, pageSize);
+  }
+
+  @QueryMapping
+  public JSONObject searchBooksByTitle(
+      @Argument String title, @Argument int pageIndex, @Argument int pageSize) {
+    return bookService.searchBooksByTitle(title, pageIndex, pageSize);
   }
 
   @GetMapping("/book/{id}/comments")

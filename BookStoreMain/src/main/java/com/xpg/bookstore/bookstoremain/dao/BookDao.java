@@ -20,5 +20,7 @@ public interface BookDao {
 
   Page<Book> findByCategoryCodeContains(Set<String> categoryCodes, Pageable pageable);
 
+  Page<Book> findByTitleContains(String title, Pageable pageable);
+
   void loadCover(Book book);
 }

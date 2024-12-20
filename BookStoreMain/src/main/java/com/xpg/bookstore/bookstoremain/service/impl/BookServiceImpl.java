@@ -76,6 +76,18 @@ public class BookServiceImpl implements BookService {
   }
 
   @Override
+  public JSONObject searchBooksByTitle(String title, int pageIndex, int pageSize) {
+    Page<Book> bookPage = bookDao.findByTitleContains(title, PageRequest.of(pageIndex, pageSize));
+    JSONObject res = new JSONObject();
+    res.put("totalNumber", bookPage.getTotalElements());
+    res.put("totalPage", bookPage.getTotalPages());
+    JSONArray items = new JSONArray();
+    for (Book book : bookPage) items.add(book);
+    res.put("items", items);
+    return JSONObject.parseObject(res.toString());
+  }
+
+  @Override
   public JSONObject getBookInfo(long bookId) {
     Book book = bookDao.findById(bookId);
     return book == null ? null : JSONObject.from(book);
