@@ -1,0 +1,27 @@
+version: '3.9'
+services:
+  app:
+    build: .
+    container_name: app
+    depends_on:
+      - mysql
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/bookstore?useUnicode=true&characterEncoding=utf8
+      SPRING_DATA_MONGODB_URI: mongodb://host.docker.internal:27017/bookstore
+      SPRING_DATA_REDIS_HOST: host.docker.internal
+      SPRING_NEO4J_URI: bolt://host.docker.internal:7687
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: host.docker.internal:9092
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    environment:
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+      MYSQL_ROOT_PASSWORD: g1n2o2G1i3e0P0u2
+    volumes:
+      - ./database/mysql/data:/var/lib/mysql
+      - ./database/mysql/schema.sql:/docker-entrypoint-initdb.d/init.sql
