@@ -4,7 +4,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-database/mysql/data
+database/mysql/data/
 out/
 
 ### STS ###
